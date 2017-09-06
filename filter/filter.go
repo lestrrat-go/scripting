@@ -8,10 +8,22 @@ import (
 	"github.com/pkg/errors"
 )
 
-func Grep(dst io.Writer, src io.Reader, pattern string) error {
-	re, err := regexp.Compile(pattern)
+type Filter interface {
+	Apply(io.Writer, io.Reader) error
+}
+
+type grep struct {
+	pattern string
+}
+
+func Grep(pattern string) Filter {
+	return &grep{pattern: pattern}
+}
+
+func (g *grep) Apply(dst io.Writer, src io.Reader) error {
+	re, err := regexp.Compile(g.pattern)
 	if err != nil {
-		return errors.Wrapf(err, `failed to compile pattern '%s'`, pattern)
+		return errors.Wrapf(err, `failed to compile pattern '%s'`, g.pattern)
 	}
 
 	scanner := bufio.NewScanner(src)

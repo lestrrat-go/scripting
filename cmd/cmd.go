@@ -18,7 +18,7 @@ type Command struct {
 	bailOnErr     bool
 	captureStdout bool
 	captureStderr bool
-	grep          string
+	filters       []filter.Filter
 	path          string
 	spinner       bool
 	stdin         io.Reader
@@ -84,13 +84,17 @@ func (c *Command) Stdin(in io.Reader) *Command {
 	return c
 }
 
-// Grep specifies that filtering on the output is performed
-// after the command has been executed. `pattern` is treated
+// Grep adds a new filtering on the output of the command
+// after it has been executed. `pattern` is treated
 // as a regular expression. DO NOT forget to call one or both
 // of `CaptureStderr` or `CaptureStdout`, otherwise there will
 // be nothing to filter against.
 func (c *Command) Grep(pattern string) *Command {
-	c.grep = pattern
+	return c.Filter(filter.Grep(pattern))
+}
+
+func (c *Command) Filter(f filter.Filter) *Command {
+	c.filters = append(c.filters, f)
 	return c
 }
 
@@ -110,7 +114,7 @@ func (c *Command) Do(ctx context.Context) (*Result, error) {
 	ec.bailOnErr = c.bailOnErr
 	ec.captureStdout = c.captureStdout
 	ec.captureStderr = c.captureStderr
-	ec.grep = c.grep
+	ec.filters = c.filters
 	ec.path = c.path
 	ec.spinner = c.spinner
 	ec.stdin = c.stdin
@@ -161,10 +165,10 @@ func (c *execCtx) Do(ctx context.Context) (*Result, error) {
 	close(done)
 
 	if out != nil {
-		if pattern := c.grep; len(c.grep) > 0 {
+		for _, f := range c.filters {
 			var dst bytes.Buffer
-			if err := filter.Grep(&dst, out, pattern); err != nil {
-				return nil, errors.Wrap(err, `failed to apply grep`)
+			if err := f.Apply(&dst, out); err != nil {
+				return nil, errors.Wrapf(err, `failed to apply filter %s`, f)
 			}
 			out = &dst
 		}
