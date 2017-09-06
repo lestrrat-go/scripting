@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"io"
 	"os/exec"
 	"time"
 
@@ -20,6 +21,7 @@ type Command struct {
 	grep          string
 	path          string
 	spinner       bool
+	stdin         io.Reader
 }
 
 type Result struct {
@@ -76,6 +78,12 @@ func (c *Command) Spinner(b bool) *Command {
 	return c
 }
 
+// Stdin sets a stdin to be piped to the command
+func (c *Command) Stdin(in io.Reader) *Command {
+	c.stdin = in
+	return c
+}
+
 // Grep specifies that filtering on the output is performed
 // after the command has been executed. `pattern` is treated
 // as a regular expression. DO NOT forget to call one or both
@@ -105,6 +113,7 @@ func (c *Command) Do(ctx context.Context) (*Result, error) {
 	ec.grep = c.grep
 	ec.path = c.path
 	ec.spinner = c.spinner
+	ec.stdin = c.stdin
 
 	return ec.Do(ctx)
 }
@@ -124,6 +133,10 @@ func (c *execCtx) Do(ctx context.Context) (*Result, error) {
 		if c.captureStderr {
 			cmd.Stderr = out
 		}
+	}
+
+	if c.stdin != nil {
+		cmd.Stdin = c.stdin
 	}
 
 	// Start a spinner
