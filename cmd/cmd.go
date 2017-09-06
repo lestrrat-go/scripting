@@ -93,6 +93,10 @@ func (c *Command) Grep(pattern string) *Command {
 	return c.Filter(filter.Grep(pattern))
 }
 
+func (c *Command) Sed(pattern, replace string) *Command {
+	return c.Filter(filter.Sed(pattern, replace))
+}
+
 func (c *Command) Filter(f filter.Filter) *Command {
 	c.filters = append(c.filters, f)
 	return c
