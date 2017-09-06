@@ -3,6 +3,7 @@ package cmd
 import (
 	"bytes"
 	"context"
+	"encoding/json"
 	"os/exec"
 	"time"
 
@@ -23,6 +24,12 @@ type Command struct {
 
 type Result struct {
 	output *bytes.Buffer
+}
+
+// JSON assumes that your accumulated output is a JSON string, and
+// attemps to decode it.
+func (r *Result) JSON(v interface{}) error {
+	return json.NewDecoder(r.output).Decode(v)
 }
 
 func (r *Result) Output() *bytes.Buffer {
