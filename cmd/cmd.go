@@ -51,10 +51,13 @@ func Exec(path string, args ...string) error {
 	return err
 }
 
+// New creates a new Command instance. `path` (i.e. the command to
+// execute) is required. By default, `BailOnError` is true
 func New(path string, args ...string) *Command {
 	return &Command{
-		path: path,
-		args: args,
+		bailOnErr: true,
+		path:      path,
+		args:      args,
 	}
 }
 
@@ -163,7 +166,7 @@ func (c *execCtx) Do(ctx context.Context) (*Result, error) {
 
 	if err := cmd.Run(); err != nil {
 		if c.bailOnErr {
-			return nil, errors.Wrap(err, `failed to execute command`)
+			return &Result{output: out}, errors.Wrap(err, `failed to execute command`)
 		}
 	}
 	close(done)
