@@ -12,7 +12,6 @@ import (
 
 func TestGrep(t *testing.T) {
 	res, err := cmd.New("ls", "-l").
-		BailOnError(true).
 		CaptureStdout(true).
 		Grep(`_test\.go$`).
 		Do(nil)

@@ -9,7 +9,6 @@ import (
 
 func TestSed(t *testing.T) {
 	r, err := cmd.New("cat", "testdata/example.txt").
-		BailOnError(true).
 		CaptureStderr(true).
 		CaptureStdout(true).
 		Sed("hello", "こんにちわ").
