@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"io"
+	"os"
 	"os/exec"
 	"time"
 
@@ -20,6 +21,7 @@ type Command struct {
 	captureStderr bool
 	filters       []filter.Filter
 	path          string
+	pipeToFile    string
 	spinner       bool
 	stdin         io.Reader
 }
@@ -76,6 +78,11 @@ func (c *Command) CaptureStdout(b bool) *Command {
 	return c
 }
 
+func (c *Command) PipeToFile(s string) *Command {
+	c.pipeToFile = s
+	return c
+}
+
 func (c *Command) Spinner(b bool) *Command {
 	c.spinner = b
 	return c
@@ -123,6 +130,7 @@ func (c *Command) Do(ctx context.Context) (*Result, error) {
 	ec.captureStderr = c.captureStderr
 	ec.filters = c.filters
 	ec.path = c.path
+	ec.pipeToFile = c.pipeToFile
 	ec.spinner = c.spinner
 	ec.stdin = c.stdin
 
@@ -136,6 +144,7 @@ func (c *execCtx) Do(ctx context.Context) (*Result, error) {
 
 	cmd := exec.CommandContext(ctx, c.path, c.args...)
 	var out *bytes.Buffer
+
 	if c.captureStdout || c.captureStderr {
 		out = &bytes.Buffer{}
 		if c.captureStdout {
@@ -178,6 +187,18 @@ func (c *execCtx) Do(ctx context.Context) (*Result, error) {
 				return nil, errors.Wrapf(err, `failed to apply filter %s`, f)
 			}
 			out = &dst
+		}
+
+		if fn := c.pipeToFile; fn != "" {
+			f, err := os.Create(fn)
+			if err != nil {
+				return nil, errors.Wrapf(err, `failed to open file %s for writing`, f)
+			}
+			defer f.Close()
+
+			if _, err := io.Copy(f, out); err != nil {
+				return nil, errors.Wrapf(err, `failed to write to file %s`, f)
+			}
 		}
 	}
 
