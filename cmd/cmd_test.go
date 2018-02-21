@@ -6,7 +6,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/lestrrat/go-scripting/cmd"
+	"github.com/lestrrat-go/scripting/cmd"
 	"github.com/stretchr/testify/assert"
 )
 

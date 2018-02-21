@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/briandowns/spinner"
-	"github.com/lestrrat/go-scripting/filter"
+	"github.com/lestrrat-go/scripting/filter"
 	"github.com/pkg/errors"
 )
 

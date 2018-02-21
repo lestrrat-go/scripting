@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 	"testing"
 
-	"github.com/lestrrat/go-scripting/filter"
+	"github.com/lestrrat-go/scripting/filter"
 	"github.com/stretchr/testify/assert"
 )
 

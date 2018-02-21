@@ -1,6 +1,10 @@
-# go-scripting
+# scripting
 
 Handy toolset when using Go as a shell script replacement
+
+[![Build Status](https://travis-ci.org/lestrrat-go/scripting.png?branch=master)](https://travis-ci.org/lestrrat-go/scripting)
+
+[![GoDoc](https://godoc.org/github.com/lestrrat-go/scripting?status.svg)](https://godoc.org/github.com/lestrrat-go/scripting)
 
 # CAVEAT EMPTOR
 
